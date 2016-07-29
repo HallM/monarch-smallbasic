@@ -1,0 +1,126 @@
+// Create your own language definition here
+// You can safely look at other samples without losing modifications.
+// Modifications are not saved on browser refresh/close though -- copy often!
+return {
+  ignoreCase: true,
+  // Set defaultToken to invalid to see what you do not tokenize yet
+  // defaultToken: 'invalid',
+
+  keywords: [
+    'Else',
+    'ElseIf',
+    'EndFor',
+    'EndIf',
+    'EndSub',
+    'EndWhile',
+    'For',
+    'Goto',
+    'If',
+    'Step',
+    'Sub',
+    'Then',
+    'To',
+    'While'
+  ],
+
+  operators: [
+    '=',
+    '<>',
+    '>',
+    '<',
+    '>=',
+    '<=',
+    '*',
+    '/',
+    '+',
+    '-',
+    'and',
+    'or'
+  ],
+
+  predefined: [
+    'Array',
+    'Clock',
+    'Controls',
+    'Desktop',
+    'Dictionary',
+    'File',
+    'Flickr',
+    'GraphicsWindow',
+    'ImageList',
+    'Math',
+    'Mouse',
+    'Network',
+    'Program',
+    'Shapes',
+    'Sound',
+    'Stack',
+    'Text',
+    'TextWindow',
+    'Timer',
+    'Turtle'
+  ],
+
+  // we include these common regular expressions
+  symbols:  /[=><+\-*\/]+/,
+
+  // C# style strings
+  escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+
+  // The main tokenizer for our languages
+  tokenizer: {
+    root: [
+      // identifiers and keywords
+      [/\.[a-z_$][\w$]*/, 'predefined'],
+      [/[a-z_$][\w$]*/, { cases: { '@keywords': 'keyword',
+                                   '@predefined': 'constant',
+                                   '@default': 'identifier' } }],
+
+      // whitespace
+      { include: '@whitespace' },
+
+      // delimiters and operators
+      [/[{}()\[\]]/, '@brackets'],
+      [/[<>](?!@symbols)/, '@brackets'],
+      [/@symbols/, { cases: { '@operators': 'operator',
+                              '@default'  : '' } } ],
+
+      // @ annotations.
+      // As an example, we emit a debugging log message on these tokens.
+      // Note: message are supressed during the first load -- change some lines to see them.
+      [/@\s*[a-zA-Z_\$][\w\$]*/, { token: 'annotation', log: 'annotation token: $0' }],
+
+      // numbers
+      [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+      [/\d+/, 'number'],
+
+      // delimiter: after number because of .\d floats
+      [/[;,.]/, 'delimiter'],
+
+      // strings
+      [/"([^"\\]|\\.)*$/, 'string.invalid' ],  // non-teminated string
+      [/"/,  { token: 'string.quote', bracket: '@open', next: '@string' } ],
+
+      // characters
+      [/'[^\\']'/, 'string'],
+      [/(')(@escapes)(')/, ['string','string.escape','string']],
+      [/'/, 'string.invalid']
+    ],
+
+    comment: [
+    ],
+
+    string: [
+      [/[^\\"]+/,  'string'],
+      [/@escapes/, 'string.escape'],
+      [/\\./,      'string.escape.invalid'],
+      [/"/,        { token: 'string.quote', bracket: '@close', next: '@pop' } ]
+    ],
+
+    whitespace: [
+      [/[ \t\r\n]+/, 'white'],
+      [/'.*$/,    'comment'],
+    ],
+  },
+};
+
